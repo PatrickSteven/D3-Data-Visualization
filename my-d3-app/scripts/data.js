@@ -28,7 +28,7 @@ export async function treeFromData(){
             //sectionID doesn't exist
             tree[dSectionID] = {
                 "Section ID": dSectionID,
-                "Section": dSection,
+                "name": dSection,
                 "children": {}
             }
         }
@@ -37,7 +37,7 @@ export async function treeFromData(){
             //HS2 ID doesn't exist
             tree[dSectionID].children[dHS2ID] = {
                 "HS2 ID": dHS2ID,
-                "HS2": dHS2,
+                "name": dHS2,
                 "children": {}
             }
         }
@@ -45,7 +45,7 @@ export async function treeFromData(){
         if(!tree[dSectionID].children[dHS2ID].children[dHS4ID]){
             tree[dSectionID].children[dHS2ID].children[dHS4ID] = {
                 "HS4 ID": dHS4ID,
-                "HS4": dHS4,
+                "name": dHS4,
                 "Trade Value": dTradeValue
             }
         }
@@ -69,6 +69,6 @@ export async function treeFromData(){
         sectionList.push(section)
     }
 
-    return {"Section": "Productos de exportacion", "children": sectionList}
+    return {"name": "Productos de exportacion", "children": sectionList}
 }
 

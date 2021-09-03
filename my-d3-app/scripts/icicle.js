@@ -1,8 +1,8 @@
 import {treeFromData} from './data.js'
-//const color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, data.children.length + 1))
 const format = d3.format(",d")
 const height = 1200
 const width = 975
+
 
 export async function icicle(){
 
@@ -28,7 +28,7 @@ export async function icicle(){
       .attr("fill", d => {
         if (!d.depth) return "#ccc";
         while (d.depth > 1) d = d.parent;
-        return "rgba(0,0,0,1)";
+        return getColor(d);
       })
       .style("cursor", "pointer")
       .on("click", clicked);
@@ -38,21 +38,23 @@ export async function icicle(){
           .attr("pointer-events", "none")
           .attr("x", 4)
           .attr("y", 13)
-          .attr("fill-opacity", d => +labelVisible(d));
+          .attr("fill-opacity", d => +labelVisible(d))
 
-      text.append("tspan")
-          .text(d => d.data["Section"]);
+    const tspanName = text.append("tspan")
+        .text(d => d.data.name)
 
-      const tspan = text.append("tspan")
+      const tspanValue = text.append("tspan")
           .attr("fill-opacity", d => labelVisible(d) * 0.7)
           .text(d => ` ${format(d.value)}`);
 
       cell.append("title")
-          .text(d => `${d.ancestors().map(d => d.data["Section"]).reverse().join("/")}\n${format(d.value)}`);
+          .text(d => `${
+              d.ancestors().map(d => d.data.name).reverse().join("/")}\n
+              ${format(d.value)
+            }`);
 
       function clicked(event, p) {
         focus = focus === event ? (event.parent ? event.parent: event) : event;
-        
 
         root.each(d => d.target = {
           x0: (d.x0 - focus.x0) / (focus.x1 - focus.x0) * height,
@@ -66,7 +68,11 @@ export async function icicle(){
 
         rect.transition(t).attr("height", d => rectHeight(d.target));
         text.transition(t).attr("fill-opacity", d => +labelVisible(d.target));
-        tspan.transition(t).attr("fill-opacity", d => labelVisible(d.target) * 0.7);
+        tspanValue.transition(t).attr("fill-opacity", d => labelVisible(d.target) * 0.7);
+
+
+        createTab(focus)
+
       }
  
     console.log("Tree Data")
@@ -94,5 +100,41 @@ function rectHeight(d) {
 
 function labelVisible(d) {
     return d.y1 <= width && d.y0 >= 0 && d.x1 - d.x0 > 16;
+}
+
+function getColor(data){
+    d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, data.children.length + 1))
+}
+
+function createTab(currentNode){
+    
+    //Clear icicle tab
+    d3.select("#icicle_tab").selectAll("ul").remove()
+    
+    //Create new tab
+    const genericTab = d3.select("#icicle_tab")
+    .append("ul")
+    .attr("class", "nav nav-tabs")
+    
+    insertParentTab(currentNode, genericTab)
+
+    //Recursive function
+    function insertParentTab(node, tab){
+        if(node.parent)
+            tab = insertParentTab(node.parent, tab)
+
+        //insert current node after parent node
+        tab.append("li")
+        .attr("class", "nav-item")
+        .append("a")
+        .attr("class", function() { 
+            return node.data.name === currentNode.data.name
+            ? "nav-link active"
+            : "nav-link"
+        })
+        .text(node.data.name)
+
+        return tab
+    }
 }
 
