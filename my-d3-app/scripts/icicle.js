@@ -1,8 +1,13 @@
 import {treeFromData} from './data.js'
-const format = d3.format(",d")
-const height = 1200
-const width = 975
+import {colors} from './colors.js'
 
+const format = d3.format(",d")
+const height = 500
+const width = 500
+
+const opacity = 0.6
+
+const maxValue = 13022117476.0
 
 export async function icicle(){
 
@@ -13,7 +18,6 @@ export async function icicle(){
     const svg = d3.select("#icicle")
     .append("svg")
     .attr("viewBox", [0, 0, width, height])
-    .style("font", "10px sans-serif");
 
     const cell = svg
     .selectAll("g")
@@ -21,60 +25,69 @@ export async function icicle(){
     .join("g")
       .attr("transform", d => `translate(${d.y0},${d.x0})`);
     
-      const rect = cell.append("rect")
-      .attr("width", d => d.y1 - d.y0 - 1)
-      .attr("height", d => rectHeight(d))
-      .attr("fill-opacity", 0.6)
-      .attr("fill", d => {
-        if (!d.depth) return "#ccc";
-        while (d.depth > 1) d = d.parent;
-        return getColor(d);
-      })
-      .style("cursor", "pointer")
-      .on("click", clicked);
+    const rect = cell.append("rect")
+    .attr("width", d => d.y1 - d.y0 - 1)
+    .attr("height", d => rectHeight(d))
+    .attr("fill-opacity", opacity)
+    .attr("fill", d => {
+        return getColor(d)
+    })
+    .style("cursor", "pointer")
+    //.attr("display", d => {
+        //return labelVisible(d) ? "block" : "none"
+    //})
+    .on("click", clicked)
+    .on('mouseover', function (d, i) {
+          d3.select(this).transition()
+               .duration('50')
+               .attr('opacity', '.85')
 
-      const text = cell.append("text")
-          .style("user-select", "none")
-          .attr("pointer-events", "none")
-          .attr("x", 4)
-          .attr("y", 13)
-          .attr("fill-opacity", d => +labelVisible(d))
+          createInformationalCard(d)
 
-    const tspanName = text.append("tspan")
-        .text(d => d.data.name)
+    })
+    .on('mouseout', function (d, i) {
+          d3.select(this).transition()
+               .duration('50')
+               .attr('opacity', '1')
 
-      const tspanValue = text.append("tspan")
-          .attr("fill-opacity", d => labelVisible(d) * 0.7)
-          .text(d => ` ${format(d.value)}`);
+          createInformationalCard(focus)
+    })
 
-      cell.append("title")
-          .text(d => `${
-              d.ancestors().map(d => d.data.name).reverse().join("/")}\n
-              ${format(d.value)
-            }`);
+    const textWrapper = cell.append("svg")
+    .attr("class", "text-wrapper")
+    .attr("width", d => {return (d.y1 - d.y0 - 1)})
+    .attr("height", d => {return (rectHeight(d))})
+    //.attr("fill-opacity", d => +labelVisible(d))
 
-      function clicked(event, p) {
-        focus = focus === event ? (event.parent ? event.parent: event) : event;
+    const textName = textWrapper.append("text")
+    .style("user-select", "none")
+    .attr("pointer-events", "none")
+    .attr("x", 4)
+    .attr("y", d => (d.x1 - d.x0)*0.05 + getFontSize(d))
+    .attr("fill-opacity", d => +labelVisible(d))
+    .text(d => d.data.name)
+    .attr("font-size", d => getFontSize(d))
 
-        root.each(d => d.target = {
-          x0: (d.x0 - focus.x0) / (focus.x1 - focus.x0) * height,
-          x1: (d.x1 - focus.x0) / (focus.x1 - focus.x0) * height,
-          y0: d.y0 - focus.y0,
-          y1: d.y1 - focus.y0
-        });
+    const textValue = textWrapper.append("text")
+    .style("user-select", "none")
+    .attr("pointer-events", "none")
+    .attr("x", 4)
+    .attr("y", d => (d.x1 - d.x0)*0.1 + getFontSize(d)*2)
+    .attr("fill-opacity", d => labelVisible(d) * 0.7)
+    .attr("font-size", d => getFontSize(d))
+    .text(d => {
+        d.percentage = d.parent ? (d.value/maxValue*100) : 100
+        d.percentage = d.percentage.toFixed(2) 
+        return d.percentage.toString() + "%"
+    })
+    
+    cell.append("title")
+          .text(d => `${d.data.name}\n${d.percentage + "%"}`);
 
-        const t = cell.transition().duration(750)
-            .attr("transform", d => `translate(${d.target.y0},${d.target.x0})`);
 
-        rect.transition(t).attr("height", d => rectHeight(d.target));
-        text.transition(t).attr("fill-opacity", d => +labelVisible(d.target));
-        tspanValue.transition(t).attr("fill-opacity", d => labelVisible(d.target) * 0.7);
+    createTab(focus)
+    createInformationalCard(focus)
 
-
-        createTab(focus)
-
-      }
- 
     console.log("Tree Data")
     console.log(treeData)
 
@@ -83,58 +96,176 @@ export async function icicle(){
 
     return svg.node()
       
-}
+    function clicked(event, p) {
+        focus = focus === event ? (event.parent ? event.parent: event) : event;
+        draw()
+    }
 
-function createHierarchy(data){
-    const root = d3.hierarchy(data)
-    .sum(d => d["Trade Value"])
-    .sort((a, b) => b.height - a.height || b.value - a.value);  
-    
-    const icicle = d3.partition().size([height, (root.height + 1) * width / 3])(root);
-    return icicle
-}
+    function draw(){
+        root.each(d => {
 
-function rectHeight(d) {
-    return d.x1 - d.x0 - Math.min(1, (d.x1 - d.x0) / 2);
-}
+            d.target = {
+                x0: (d.x0 - focus.x0) / (focus.x1 - focus.x0) * height,
+                x1: (d.x1 - focus.x0) / (focus.x1 - focus.x0) * height,
+                y0: d.y0 - focus.y0,
+                y1: d.y1 - focus.y0
+            }
+        });
+        
+        const t = cell.transition().duration(300)
+        .attr("transform", d => `translate(${d.target.y0},${d.target.x0})`);
 
-function labelVisible(d) {
-    return d.y1 <= width && d.y0 >= 0 && d.x1 - d.x0 > 16;
-}
+        rect.transition(t)
+        .attr("width", d => d.target.y1 - d.target.y0 - 1)
+        .attr("height", d => rectHeight(d.target))
+        //.attr("display", d => {
+            //return labelVisible(d.target) ? "block" : "none"
+        //})
 
-function getColor(data){
-    d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, data.children.length + 1))
-}
+        textName.transition(t)
+        .attr("fill-opacity", d => +labelVisible(d.target))
+        .attr("y", d => (d.target.x1 - d.target.x0)*0.05 + getFontSize(d.target))
+        .attr("font-size", d => getFontSize(d.target))
 
-function createTab(currentNode){
-    
-    //Clear icicle tab
-    d3.select("#icicle_tab").selectAll("ul").remove()
-    
-    //Create new tab
-    const genericTab = d3.select("#icicle_tab")
-    .append("ul")
-    .attr("class", "nav nav-tabs")
-    
-    insertParentTab(currentNode, genericTab)
+        textValue.transition(t)
+        .attr("fill-opacity", d => labelVisible(d.target) * 0.7)
+        .attr("y", d => (d.target.x1 - d.target.x0)*0.1 + getFontSize(d.target)*2)
+        .attr("font-size", d => getFontSize(d.target))
 
-    //Recursive function
-    function insertParentTab(node, tab){
-        if(node.parent)
-            tab = insertParentTab(node.parent, tab)
+        textWrapper.transition(t)
+        .attr("width", d => {return (d.target.y1 - d.target.y0 - 1) + "px"})
+        .attr("height", d => {return (rectHeight(d.target)) + "px"})
 
-        //insert current node after parent node
-        tab.append("li")
-        .attr("class", "nav-item")
-        .append("a")
-        .attr("class", function() { 
-            return node.data.name === currentNode.data.name
-            ? "nav-link active"
-            : "nav-link"
-        })
-        .text(node.data.name)
+        createTab(focus)
+        createInformationalCard(focus)
+    }
 
-        return tab
+    function createTab(currentNode){
+        
+        //Clear icicle tab
+        d3.select("#icicle_tab").selectAll("ul").remove()
+        
+        //Create new tab
+        const genericTab = d3.select("#icicle_tab")
+        .append("ul")
+        .attr("class", "nav nav-tabs")
+        
+        insertParentTab(currentNode, genericTab)
+
+        //Recursive function
+        function insertParentTab(node, tab){
+            if(node.parent)
+                tab = insertParentTab(node.parent, tab)
+
+            //insert current node after parent node
+            tab.append("li")
+            .attr("class", "nav-item")
+            .append("a")
+            .attr("class", function() { 
+                return node.data.name === currentNode.data.name
+                ? "nav-link active"
+                : "nav-link"
+            })
+            .text(node.data.name)
+
+            return tab
+        }
+    }
+
+
+    function createInformationalCard(d){
+
+        /*  
+        <div class="card-header">
+            Featured
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">Special title treatment</h5>
+            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+            <a href="#" class="btn btn-primary">Go somewhere</a>
+        </div>
+        <div class="card-footer text-muted">
+            2 days ago
+        </div>
+        */
+
+        //Clear icicle info card
+        d3.select("#icicle_info").selectAll(".icicle-info-card").remove()
+        
+        //Create new card
+        const cardHeader = d3.select("#icicle_info")
+        .append("div")
+        .attr("class", "icicle-info-card card-header")
+        .style("background-color", getColor(d))
+        .style("color", "white")
+        .style("opacity", opacity)
+        .text("Product")
+
+        const cardBody = d3.select("#icicle_info")
+        .append("div")
+        .attr("class", "icicle-info-card card-body")
+
+        cardBody.append("h5")
+        .attr("class", "card-title")
+        .text(d.data.name)
+
+        cardBody.append("p")
+        .attr("class", "card-text")
+        .text("Percentage: " + d.percentage + "%")
+
+        cardBody.append("p")
+        .attr("class", "card-text")
+        .text("Trade Value: $" + d.value)
+
+        if(d.data["Section ID"]){
+            const cardFooter = d3.select("#icicle_info")
+            .append("div")
+            .attr("class", "icicle-info-card card-footer text-muted")
+            .style("background-color", getColor(d))
+            .style("opacity", opacity)
+       
+            cardFooter.append("img")
+            .attr("class", "card-icon")
+            .attr("src", "https://oec.world/images/icons/hs/hs_" + d.data["Section ID"] + ".svg")
+        }
+
+    }
+
+
+    function createHierarchy(data){
+        const root = d3.hierarchy(data)
+        .sum(d => d["Trade Value"])
+        .sort((a, b) => b.height - a.height || b.value - a.value);  
+        
+        const icicle = d3.partition().size([height, (root.height + 1) * width / 4])(root);
+        return icicle
+    }
+
+    function rectHeight(d) {
+        return d.x1 - d.x0 - Math.min(1, (d.x1 - d.x0) / 2);
+    }
+
+    function labelVisible(d) {
+        return d.y1 <= width && d.y0 >= 0 && d.x1 - d.x0 > 20;
+    }
+
+    function getColor(d){
+        
+        const sectionID = d.data["Section ID"]
+        if(d.data["HS4 ID"]) return colors[sectionID]["HS4"]
+        else if(d.data["HS2 ID"]) return colors[sectionID]["HS2"]
+        else if(d.data["Section ID"]) return colors[sectionID]["Section"]
+        else return "rgba(118, 39,108,1)"
+        
+    }
+
+    function getFontSize(d){
+        const height = d.x1 - d.x0
+        if(height <= 35)  
+            return height*0.25
+        else return 10
     }
 }
+
+
 

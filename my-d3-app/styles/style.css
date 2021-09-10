@@ -1,0 +1,38 @@
+div#icicle_plot_cotainer {
+    width: 100%;
+    text-align: center;
+}
+
+div#icicle {
+    float: left;
+    width: 47%;
+    height: 20%;
+    margin-left: 1%;
+}
+
+div#icicle_info {
+    display: inline-block;
+    margin: 0 auto;
+    width: 30%;
+    height: 30%;
+}
+
+div#icicle_tab{
+    width: 47%;
+    margin-bottom: 1%;
+    margin-top: 0.5%;
+}
+
+div.card-footer{
+}
+
+div.card-header{
+}
+
+
+img.card-icon{
+    width: 40px;
+    height: 40px;
+}
+
+
