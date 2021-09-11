@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script type="text/javascript" src="http://d3js.org/d3.v5.min.js"></script>
+        <!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">-->
+        <link rel="stylesheet" type="text/css" href="./styles/bootstrap.css">
+        <link rel="stylesheet" type="text/css" href="./styles/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="./styles/style.css">
+        
+    </head>
+    <body>
+        <div id="icicle_tab"></div>
+        <div id="icicle_plot_cotainer">
+            <div id="icicle"></div>
+            <div id="icicle_info"></div>
+        </div>
+    </body>
+</html>
+
+<script type="module">
+    import { icicle } from 'http://localhost:3000/scripts/icicle_horizontal.js'
+
+    window.onload = function(){
+        icicle()
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>

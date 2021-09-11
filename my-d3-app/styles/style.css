@@ -1,23 +1,23 @@
-div#icicle_plot_cotainer {
+div#icicle_plot_cotainer, div#radial-tree-cotainer{
     width: 100%;
     text-align: center;
 }
 
-div#icicle {
+div#icicle, div#radial-tree {
     float: left;
     width: 47%;
     height: 20%;
     margin-left: 1%;
 }
 
-div#icicle_info {
+div#icicle_info, div#radial-tree-info {
     display: inline-block;
     margin: 0 auto;
     width: 30%;
     height: 30%;
 }
 
-div#icicle_tab{
+div#icicle_tab, div#radial-tree-tab{
     width: 47%;
     margin-bottom: 1%;
     margin-top: 0.5%;
