@@ -61,6 +61,8 @@ export async function icicle(){
     .attr("fill-opacity", d => +labelVisible(d))
     .text(d => d.data.name)
     .attr("font-size", d => getFontSize(d))
+    .attr("font-family", "sans-serif")
+    .attr("class","fw-normal")
 
     const textValue = textWrapper.append("text")
     .style("user-select", "none")
@@ -69,6 +71,8 @@ export async function icicle(){
     .attr("y", d => (d.y1 - d.y0)*0.1 + getFontSize(d)*2)
     .attr("fill-opacity", d => labelVisible(d) * 0.7)
     .attr("font-size", d => getFontSize(d))
+    .attr("font-family", "sans-serif")
+    .attr("class","fw-lighter")
     .text(d => {
         d.percentage = d.parent ? (d.value/maxValue*100) : 100
         d.percentage = d.percentage.toFixed(2) 
@@ -240,7 +244,7 @@ export async function icicle(){
     }
 
     function labelVisible(d) {
-        return d.y1 <= width && d.y0 >= 0 && d.x1 - d.x0 > 20;
+        return d.x1 <= height && d.x0 >= 0 && d.y1 - d.y0 > 20;
     }
 
     function getColor(d){
@@ -254,9 +258,9 @@ export async function icicle(){
     }
 
     function getFontSize(d){
-        const height = d.x1 - d.x0
-        if(height <= 35)  
-            return height*0.25
+        const width = d.y1 - d.y0
+        if(width <= 35)  
+            return width*0.25
         else return 10
     }
 }

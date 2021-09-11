@@ -1,3 +1,6 @@
+body{
+    font-family: sans-serif;
+}
 div#icicle_plot_cotainer, div#radial-tree-cotainer{
     width: 100%;
     text-align: center;
@@ -7,7 +10,7 @@ div#icicle, div#radial-tree {
     float: left;
     width: 47%;
     height: 20%;
-    margin-left: 1%;
+    margin-left: 0.5%;
 }
 
 div#icicle_info, div#radial-tree-info {

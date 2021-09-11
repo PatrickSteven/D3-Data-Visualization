@@ -5,8 +5,7 @@ const format = d3.format(",d")
 const height = 500
 const width = 500
 
-const opacity = 0.6
-
+const opacity = 0.6 
 const maxValue = 13022117476.0
 
 export async function icicle(){
@@ -57,7 +56,6 @@ export async function icicle(){
     .attr("class", "text-wrapper")
     .attr("width", d => {return (d.y1 - d.y0 - 1)})
     .attr("height", d => {return (rectHeight(d))})
-    //.attr("fill-opacity", d => +labelVisible(d))
 
     const textName = textWrapper.append("text")
     .style("user-select", "none")
@@ -67,6 +65,8 @@ export async function icicle(){
     .attr("fill-opacity", d => +labelVisible(d))
     .text(d => d.data.name)
     .attr("font-size", d => getFontSize(d))
+    .attr("font-family", "sans-serif")
+    .attr("class","fw-normal")
 
     const textValue = textWrapper.append("text")
     .style("user-select", "none")
@@ -75,6 +75,8 @@ export async function icicle(){
     .attr("y", d => (d.x1 - d.x0)*0.1 + getFontSize(d)*2)
     .attr("fill-opacity", d => labelVisible(d) * 0.7)
     .attr("font-size", d => getFontSize(d))
+    .attr("font-family", "sans-serif")
+    .attr("class","fw-lighter")
     .text(d => {
         d.percentage = d.parent ? (d.value/maxValue*100) : 100
         d.percentage = d.percentage.toFixed(2) 
@@ -126,6 +128,7 @@ export async function icicle(){
         .attr("fill-opacity", d => +labelVisible(d.target))
         .attr("y", d => (d.target.x1 - d.target.x0)*0.05 + getFontSize(d.target))
         .attr("font-size", d => getFontSize(d.target))
+
 
         textValue.transition(t)
         .attr("fill-opacity", d => labelVisible(d.target) * 0.7)

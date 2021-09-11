@@ -3,8 +3,8 @@ import {colors} from './colors.js'
 
 
 const format = d3.format(",d")
-const height = 600
-const width = 600
+const height = 550
+const width = 550
 
 const opacity = 0.6
 const maxValue = 13022117476.0
@@ -46,7 +46,8 @@ export async function radialTree(){
     .on('mouseover', function (d, i) {
         d3.select(this).transition()
         .duration('50')
-        .attr('opacity', '.85')
+        .attr('opacity', '0.85')
+        .style("fill","black")
         
         createInformationalCard(d)
         createTab(d)
@@ -55,35 +56,19 @@ export async function radialTree(){
     .on('mouseout', function (d, i) {
         d3.select(this).transition()
         .duration('50')
+        .style("fill", d => getColor(d))
         .attr('opacity', '1')
 
         createInformationalCard(focus)
         createTab(focus)
     })
 
-    //const textWrapper = cell.append("svg")
-    //.attr("class", "text-wrapper")
-    //.attr("width", d => {return (d.y1 - d.y0 - 1)})
-    //.attr("height", d => {return (rectHeight(d))})
-    //.attr("x", d => d.x0)
-    //.attr("y", d => d.y0)
-
-    //const textName = textWrapper.append("text")
-    //.style("user-select", "none")
-    //.attr("pointer-events", "none")
-    //.attr("x", 4)
-    //.attr("y", d => (d.x1 - d.x0)*0.05 + getFontSize(d))
-    ////.attr("fill-opacity", d => +labelVisible(d))
-    //.text(d => d.data.name)
-    //.attr("font-size", 10)
-    ////.attr("font-size", d => getFontSize(d))
-    
-
     createInformationalCard(focus)
     createTab(focus)
 
     function clicked(event, p) {
         focus = focus === event ? (event.parent ? event.parent: event) : event;
+
         createInformationalCard(focus) 
         createTab(focus)
     }
